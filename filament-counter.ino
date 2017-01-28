@@ -119,13 +119,15 @@ void loop() {
   sensor.write(0xeb);
   sensor.read();
 
+  // We only care about the mx sensor here
+  // But since the request gives us both
+  // we need to read both values.
   mstat = sensor.read();
   mx = sensor.read();
   my = sensor.read();
 
   if(direct) {
     mx = mx * -1;
-    my = my * -1;
   }
 
   buttonState = digitalRead(RESET_BTN_PIN);
@@ -143,6 +145,8 @@ void loop() {
       timePress = 0;
       timePressLimit = 0;
       clicks = 0;
+      
+      renderToLCD();
     }
 
     if(clicks == 1 && timePressLimit != 0 && millis() > timePressLimit) {
@@ -151,13 +155,16 @@ void loop() {
       clicks = 0;
 
       newmx = 0;
+
+      renderToLCD();
     }
   }
 
-  if(abs(mx) > 0 || abs(my) > 0 || (newmx == 0)) {
+  if(abs(mx) > 0) {
     newmx = newmx + mx;
-    newmy = newmy + my;
 
+    total = total + mx;
+    
     renderToLCD();
   }
   delay(100);
@@ -168,13 +175,13 @@ void renderToLCD()
 {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("U = ");
+    lcd.print("Cur = ");
     lcd.print(newmx / CALIBRATION_FACTOR);
     lcd.print(" mm");
     lcd.setCursor(0, 1);
     lcd.print("                ");
     lcd.setCursor(0, 1);
-    lcd.print("T = ");
+    lcd.print("Tot = ");
     lcd.print(total / CALIBRATION_FACTOR);
     lcd.print(" mm");
 }
